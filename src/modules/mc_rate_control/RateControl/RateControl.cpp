@@ -60,6 +60,10 @@ void RateControl::setSaturationStatus(const MultirotorMixer::saturation_status &
 Vector3f RateControl::update(const Vector3f &rate, const Vector3f &rate_sp, const Vector3f &angular_accel,
 			     const float dt, const bool landed)
 {
+	// ADDED - JH
+	const Vector3f torque = rate_sp;
+
+	/*
 	// angular rates error
 	Vector3f rate_error = rate_sp - rate;
 
@@ -72,6 +76,7 @@ Vector3f RateControl::update(const Vector3f &rate, const Vector3f &rate_sp, cons
 	}
 
 	return torque;
+	*/
 }
 
 void RateControl::updateIntegral(Vector3f &rate_error, const float dt)
