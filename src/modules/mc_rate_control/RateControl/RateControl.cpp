@@ -63,6 +63,8 @@ Vector3f RateControl::update(const Vector3f &rate, const Vector3f &rate_sp, cons
 	// ADDED - JH
 	const Vector3f torque = rate_sp;
 
+	return torque;
+
 	/*
 	// angular rates error
 	Vector3f rate_error = rate_sp - rate;
