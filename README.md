@@ -1,5 +1,6 @@
 # PX4 Drone Autopilot (JH modified)
-Attitude target from the controller is transformed into the body torque input.
+* Attitude target from the controller is transformed into the body torque input.
+* Publishing rates of the position & attitude information are also modified.
 
 ## Original PX4 Drone Autopilot
 
