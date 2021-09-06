@@ -86,12 +86,38 @@ public:
 	 */
 	matrix::Vector3f update(const matrix::Vector3f &rate, const matrix::Vector3f &rate_sp,
 				const matrix::Vector3f &angular_accel, const float dt, const bool landed);
+	// JH - ADDED
+	// matrix::Vector3f update_JH(const matrix::Vector3f &angle_euler, const matrix::Vector3f &rate, const matrix::Vector3f &rate_sp,
+	// 			const matrix::Vector3f &angular_accel, const float dt, const bool landed);
+	matrix::Vector3f update_JH2(const matrix::Vector3f &angle_euler, const matrix::Vector3f &rate, const matrix::Vector3f &rate_sp,
+				const matrix::Vector3f &angular_accel, const float dt, const bool landed, const int mode_, const float thrust_);
 
 	/**
 	 * Set the integral term to 0 to prevent windup
 	 * @see _rate_int
 	 */
 	void resetIntegral() { _rate_int.zero(); }
+
+	// JH - ADDED
+	/**
+	 * Set PQ filter term to 0 at every disarming (check MulticopterRateControl.cpp)
+	**/
+	void resetPQfitler()
+	{
+		pphi_FF.zero();
+		ptheta_FF.zero();
+		ppsi_FF.zero();
+		qphi_FF.zero();
+		qtheta_FF.zero();
+		qpsi_FF.zero();
+
+		pphi_PP.zero();
+		ptheta_PP.zero();
+		ppsi_PP.zero();
+		qphi_PP.zero();
+		qtheta_PP.zero();
+		qpsi_PP.zero();
+	}
 
 	/**
 	 * Get status message of controller for logging/debugging
@@ -111,6 +137,21 @@ private:
 
 	// States
 	matrix::Vector3f _rate_int; ///< integral term of the rate controller
+
+	// JH - ADDED
+	// DOB PQ filter
+	matrix::Vector2f pphi_FF;
+	matrix::Vector2f ptheta_FF;
+	matrix::Vector2f ppsi_FF;
+	matrix::Vector2f qphi_FF;
+	matrix::Vector2f qtheta_FF;
+	matrix::Vector2f qpsi_FF;
+	matrix::Vector2f pphi_PP;
+	matrix::Vector2f ptheta_PP;
+	matrix::Vector2f ppsi_PP;
+	matrix::Vector2f qphi_PP;
+	matrix::Vector2f qtheta_PP;
+	matrix::Vector2f qpsi_PP;
 
 	bool _mixer_saturation_positive[3] {};
 	bool _mixer_saturation_negative[3] {};

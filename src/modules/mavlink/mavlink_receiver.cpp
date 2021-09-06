@@ -291,6 +291,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_REQUEST_EVENT:
 		handle_message_request_event(msg);
 		break;
+	// JH - ADDED
+	case MAVLINK_MSG_ID_FLIGHT_MODE:
+		handle_message_flight_mode(msg);
+		break;
 
 	default:
 		break;
@@ -2942,6 +2946,27 @@ MavlinkReceiver::handle_message_gimbal_device_information(mavlink_message_t *msg
 	gimbal_information.gimbal_device_compid = msg->compid;
 
 	_gimbal_device_information_pub.publish(gimbal_information);
+}
+// JH - ADDED
+void
+MavlinkReceiver::handle_message_flight_mode(mavlink_message_t *msg)
+{
+    mavlink_flight_mode_t man;
+    mavlink_msg_flight_mode_decode(msg, &man);
+
+    struct flight_mode_s key;
+    memset(&key, 0, sizeof(key));
+
+    key.timestamp = hrt_absolute_time();
+    key.flight_mode = man.flight_mode;
+
+    if (_flight_mode_pub == nullptr) {
+        _flight_mode_pub = orb_advertise(ORB_ID(flight_mode), &key);
+
+    } else {
+        orb_publish(ORB_ID(flight_mode), _flight_mode_pub, &key);
+    }
+
 }
 
 void

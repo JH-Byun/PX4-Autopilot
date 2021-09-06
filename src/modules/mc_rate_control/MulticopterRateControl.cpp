@@ -126,6 +126,19 @@ MulticopterRateControl::Run()
 		vehicle_angular_acceleration_s v_angular_acceleration{};
 		_vehicle_angular_acceleration_sub.copy(&v_angular_acceleration);
 
+		// JH - ADDED
+		// attitude subscription
+		vehicle_attitude_s v_att{};
+		_vehicle_attitude_sub.copy(&v_att);
+
+		// JH - ADDED
+		flight_mode_s _flight_mode;
+		if (_flight_mode_sub.update(&_flight_mode))
+		{
+			flight_mode = _flight_mode.flight_mode;
+			PX4_INFO("Flight_mode: %5.3f", (double)flight_mode);
+		}
+
 		const hrt_abstime now = angular_velocity.timestamp_sample;
 
 		// Guard against too small (< 0.125ms) and too large (> 20ms) dt's.
@@ -134,6 +147,11 @@ MulticopterRateControl::Run()
 
 		const Vector3f angular_accel{v_angular_acceleration.xyz};
 		const Vector3f rates{angular_velocity.xyz};
+
+		// JH - ADDED
+		// ZYX Euler angle - based on Euler.hpp, Dcm.hpp - unit: [rad]
+		const Quatf angle_quat{v_att.q};
+		const Vector3f angle_euler(Eulerf(angle_quat).phi(),Eulerf(angle_quat).theta(),Eulerf(angle_quat).psi());
 
 		/* check for updates in other topics */
 		_v_control_mode_sub.update(&_v_control_mode);
@@ -204,6 +222,8 @@ MulticopterRateControl::Run()
 			// reset integral if disarmed
 			if (!_v_control_mode.flag_armed || _vehicle_status.vehicle_type != vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
 				_rate_control.resetIntegral();
+				// JH - ADDED
+				_rate_control.resetPQfitler();
 			}
 
 			// update saturation status from mixer feedback
@@ -219,7 +239,17 @@ MulticopterRateControl::Run()
 			}
 
 			// run rate controller
-			const Vector3f att_control = _rate_control.update(rates, _rates_sp, angular_accel, dt, _maybe_landed || _landed);
+			// const Vector3f att_control = _rate_control.update(rates, _rates_sp, angular_accel, dt, _maybe_landed || _landed);
+			// JH - ADDED
+			// const Vector3f att_control = _rate_control.update_JH(angle_euler, rates, _rates_sp, angular_accel, dt, _maybe_landed || _landed);
+			// JH - ADDED - 2
+			float thrust;
+			if ((double)_thrust_sp < 0.0)
+				thrust = - (float)80.0 * _thrust_sp;
+			else
+				thrust = (float)80.0 * _thrust_sp;
+
+			const Vector3f att_control = _rate_control.update_JH2(angle_euler, rates, _rates_sp, angular_accel, dt, _maybe_landed || _landed, flight_mode, thrust);
 
 			// publish rate controller status
 			rate_ctrl_status_s rate_ctrl_status{};
