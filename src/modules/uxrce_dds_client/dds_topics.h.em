@@ -30,7 +30,8 @@ import os
 #include <uORB/topics/@(include).h>
 @[end for]@
 
-#define UXRCE_DEFAULT_POLL_RATE 10
+// #define UXRCE_DEFAULT_POLL_RATE 10
+#define UXRCE_DEFAULT_POLL_RATE 5 // JH-added
 
 typedef bool (*UcdrSerializeMethod)(const void* data, ucdrBuffer& buf, int64_t time_offset);
 
@@ -45,6 +46,7 @@ struct SendSubscription {
 	const char* dds_type_name;
 	uint32_t topic_size;
 	UcdrSerializeMethod ucdr_serialize_method;
+	uint32_t poll_rate_ms;  // JH-Added New field for per-topic poll rate
 };
 
 // Subscribers for messages to send
@@ -56,6 +58,7 @@ struct SendTopicsSubs {
 			  "@(pub['dds_type'])",
 			  ucdr_topic_size_@(pub['simple_base_type'])(),
 			  &ucdr_serialize_@(pub['simple_base_type']),
+			  @(pub.get('poll_rate_ms', 'UXRCE_DEFAULT_POLL_RATE')),  // JH-Added: Use poll_rate_ms from YAML if defined, otherwise use UXRCE_DEFAULT_POLL_RATE
 			},
 @[    end for]@
 	};
@@ -73,7 +76,8 @@ void SendTopicsSubs::init() {
 	for (unsigned idx = 0; idx < sizeof(send_subscriptions)/sizeof(send_subscriptions[0]); ++idx) {
 		fds[idx].fd = orb_subscribe(send_subscriptions[idx].orb_meta);
 		fds[idx].events = POLLIN;
-		orb_set_interval(fds[idx].fd, UXRCE_DEFAULT_POLL_RATE);
+		// orb_set_interval(fds[idx].fd, UXRCE_DEFAULT_POLL_RATE);
+		orb_set_interval(fds[idx].fd, send_subscriptions[idx].poll_rate_ms); // JH-Added
 	}
 }
 
