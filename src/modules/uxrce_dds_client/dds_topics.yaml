@@ -19,6 +19,7 @@ publications:
 
   - topic: /fmu/out/battery_status
     type: px4_msgs::msg::BatteryStatus
+    poll_rate_ms: 200 # 5 Hz (on purpose)
 
   - topic: /fmu/out/collision_constraints
     type: px4_msgs::msg::CollisionConstraints
@@ -60,12 +61,15 @@ publications:
 
   - topic: /fmu/out/vehicle_global_position
     type: px4_msgs::msg::VehicleGlobalPosition
+    poll_rate_ms: 200 # 5 Hz (on purpose)
 
   - topic: /fmu/out/vehicle_gps_position
     type: px4_msgs::msg::SensorGps
+    poll_rate_ms: 200 # 5 Hz (on purpose)
 
   - topic: /fmu/out/vehicle_local_position
     type: px4_msgs::msg::VehicleLocalPosition
+    poll_rate_ms: 100 # 10 Hz (on purpose)
 
   - topic: /fmu/out/vehicle_odometry
     type: px4_msgs::msg::VehicleOdometry
